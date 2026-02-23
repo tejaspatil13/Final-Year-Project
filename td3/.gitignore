@@ -1,0 +1,8 @@
+oanda.cfg
+.idea/
+__pycache__/
+**/__pycache__/
+logs/
+stock-data/
+processed-data/
+results/
