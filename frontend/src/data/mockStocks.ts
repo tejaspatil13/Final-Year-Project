@@ -220,7 +220,6 @@ export const trendingStocks = [
   { ticker: "TCS", price: 3842.50, change: 1.25 },
   { ticker: "RELIANCE", price: 2934.70, change: 2.27 },
   { ticker: "INFY", price: 1587.40, change: -0.80 },
-  { ticker: "AAPL", price: 198.45, change: 1.68 },
   { ticker: "HDFC", price: 1654.20, change: 0.45 },
   { ticker: "WIPRO", price: 487.30, change: -1.12 },
 ];

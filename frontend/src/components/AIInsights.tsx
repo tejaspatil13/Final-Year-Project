@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
 import { Lightbulb, ThumbsUp, ThumbsDown, Activity, Newspaper } from "lucide-react";
 import type { Stock } from "@/data/mockStocks";
+import { useQuery } from "@tanstack/react-query";
+import { fetchTD3Results } from "@/data/td3Results";
 
 interface AIInsightsProps {
   stock: Stock;
@@ -9,6 +11,29 @@ interface AIInsightsProps {
 const AIInsights = ({ stock }: AIInsightsProps) => {
   const ins = stock.insights;
   const sentColor = ins.sentiment === "Positive" ? "text-gain" : ins.sentiment === "Negative" ? "text-loss" : "text-warn";
+
+  const { data: td3 } = useQuery({
+    queryKey: ["td3-results"],
+    queryFn: fetchTD3Results,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+
+  const isAAPL = stock.ticker === "AAPL";
+  const m = td3?.metrics;
+
+  const buyReasons = [...ins.buyReasons];
+  const sellReasons = [...ins.sellReasons];
+
+  if (isAAPL && m) {
+    buyReasons.push(
+      `TD3 trading model shows ${m.returnPct.toFixed(1)}% test-period return with Sharpe ${m.sharpeRatio.toFixed(2)}.`
+    );
+    sellReasons.push(
+      `TD3 model worst drawdown was ${m.maxDrawdownPct.toFixed(1)}%, which is the largest peak-to-bottom drop during the test.`
+    );
+  }
 
   return (
     <motion.div
@@ -29,7 +54,7 @@ const AIInsights = ({ stock }: AIInsightsProps) => {
             <ThumbsUp className="h-4 w-4" /> Reasons to Buy
           </div>
           <ul className="space-y-1.5">
-            {ins.buyReasons.map((r, i) => (
+            {buyReasons.map((r, i) => (
               <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gain" />
                 {r}
@@ -43,7 +68,7 @@ const AIInsights = ({ stock }: AIInsightsProps) => {
             <ThumbsDown className="h-4 w-4" /> Reasons to Sell
           </div>
           <ul className="space-y-1.5">
-            {ins.sellReasons.map((r, i) => (
+            {sellReasons.map((r, i) => (
               <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-loss" />
                 {r}
