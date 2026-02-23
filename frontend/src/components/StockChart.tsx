@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
 import { BarChart3 } from "lucide-react";
 import type { Stock } from "@/data/mockStocks";
+import { useQuery } from "@tanstack/react-query";
+import { fetchTD3Results } from "@/data/td3Results";
 
 interface StockChartProps {
   stock: Stock;
@@ -20,8 +22,40 @@ const StockChart = ({ stock }: StockChartProps) => {
   const [range, setRange] = useState(90);
   const [chartType, setChartType] = useState<"area" | "line">("area");
 
+  const { data: td3 } = useQuery({
+    queryKey: ["td3-results"],
+    queryFn: fetchTD3Results,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+
   const data = useMemo(() => {
-    const sliced = stock.historicalData.slice(-range);
+    // Base historical series from mock data
+    let hist = stock.historicalData;
+
+    // For AAPL, if TD3 results are available, use real OHLC from TD3 output
+    if (stock.ticker === "AAPL" && td3?.ohlc?.length) {
+      const ohlc = td3.ohlc;
+      const equity = td3.portfolioHistory;
+      const basePrice = ohlc[0]?.close ?? stock.currentPrice;
+      const baseEquity = equity && equity.length > 0 ? equity[0] : 1;
+
+      hist = ohlc.map((bar, i) => {
+        let predicted: number | undefined;
+        if (equity && equity[i] != null && baseEquity !== 0) {
+          const scaled = basePrice * (equity[i] / baseEquity);
+          predicted = Number.isFinite(scaled) ? scaled : undefined;
+        }
+        return {
+          date: bar.date,
+          price: bar.close,
+          predicted,
+        };
+      });
+    }
+
+    const sliced = hist.slice(-range);
     // Thin out data for performance
     const step = Math.max(1, Math.floor(sliced.length / 80));
     return sliced.filter((_, i) => i % step === 0 || i === sliced.length - 1);

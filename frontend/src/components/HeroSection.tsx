@@ -32,7 +32,7 @@ const HeroSection = ({ onSearch }: HeroSectionProps) => {
           {/* Badge */}
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-medium text-primary">
             <Zap className="h-3.5 w-3.5" />
-            Powered by Advanced Machine Learning
+            Powered by Advanced Machine Learning Model (TD3)
           </div>
 
           <h1 className="mb-4 text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl">
@@ -92,25 +92,38 @@ const HeroSection = ({ onSearch }: HeroSectionProps) => {
           </form>
 
           {/* Quick picks */}
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <span className="text-xs text-muted-foreground">Trending:</span>
-            {trendingStocks.map((s) => (
+          <div className="mt-2 flex flex-col items-center gap-2 text-xs">
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <span className="text-xs text-muted-foreground">Trending:</span>
+              {trendingStocks.map((s) => (
+                <button
+                  key={s.ticker}
+                  onClick={() => onSearch(s.ticker)}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-secondary/50 px-3 py-1 text-xs font-medium text-secondary-foreground transition-colors hover:border-primary/30 hover:bg-secondary"
+                >
+                  <span className="font-mono">{s.ticker}</span>
+                  <span className={s.change >= 0 ? "text-gain" : "text-loss"}>
+                    {s.change >= 0 ? "+" : ""}{s.change}%
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Offline data (CSV) picks */}
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <span className="text-xs text-muted-foreground">Offline data (CSV file):</span>
               <button
-                key={s.ticker}
-                onClick={() => onSearch(s.ticker)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-secondary/50 px-3 py-1 text-xs font-medium text-secondary-foreground transition-colors hover:border-primary/30 hover:bg-secondary"
+                onClick={() => onSearch("AAPL")}
+                className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-primary/50 bg-secondary/40 px-3 py-1 text-xs font-medium text-primary transition-colors hover:bg-secondary/70"
               >
-                <span className="font-mono">{s.ticker}</span>
-                <span className={s.change >= 0 ? "text-gain" : "text-loss"}>
-                  {s.change >= 0 ? "+" : ""}{s.change}%
-                </span>
+                <span className="font-mono">AAPL (CSV)</span>
               </button>
-            ))}
+            </div>
           </div>
         </motion.div>
 
         {/* Stats */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
@@ -127,7 +140,7 @@ const HeroSection = ({ onSearch }: HeroSectionProps) => {
               <div className="text-xs text-muted-foreground">{label}</div>
             </div>
           ))}
-        </motion.div>
+        </motion.div> */}
       </div>
     </section>
   );
